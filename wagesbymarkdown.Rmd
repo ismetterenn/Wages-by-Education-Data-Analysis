@@ -1,0 +1,87 @@
+---
+title: "Wages by Education"
+author: "İsmet Eren"
+date: "`r Sys.Date()`"
+output: html_document
+---
+## Installing packages
+
+```{r, echo = TRUE}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(patchwork)
+```
+
+##  Looking for dataset
+
+```{r, echo = TRUE}
+wages_by_education <- read_csv("wages_by_education.csv")
+str(wages_by_education)
+head(wages_by_education)
+summarize(wages_by_education)
+str(wages_by_education)
+names(wages_by_education)
+wages_by_education %>% 
+  select("white_men_bachelors_degree", "white_women_bachelors_degree", "black_men_bachelors_degree", "black_women_bachelors_degree", "bachelors_degree")%>% 
+  summary()
+```
+
+
+## Formatting year column
+
+```{r, echo = TRUE}
+wages_by_education$year <- as.Date(as.character(wages_by_education$year), format = "%Y")
+```
+
+
+## Wages by Education DataViz
+
+```{r, echo = TRUE}
+ggplot(wages_by_education, aes(year))+ 
+  geom_line(aes(y = less_than_hs, colour = "less_than_hs")) + 
+  geom_line(aes(y = high_school, colour = "high_school")) +
+  geom_line(aes(y = some_college, colour = "some_college")) +
+  geom_line(aes(y= bachelors_degree, colour = "bachelors_degree")) +
+  geom_line(aes(y= advanced_degree, colour = "advanced_degree")) +
+  labs(x = "Years (1973-2022)", y = "Hourly Wage ($)", title = "Wages by Education Level in the USA", color= "Manual", subtitle= "How different education levels affect hourly wage?") +
+  scale_color_manual(values = c("less_than_hs" = "red", "high_school" = "blue", "some_college" = "green", "bachelors_degree" = "yellow", "advanced_degree" = "purple" ),
+                     labels = c("Advanced Degree","Bachelor's Degree", "Some College", "High School","Less Than High School"),
+                     breaks = c("advanced_degree", "bachelors_degree", "some_college", "high_school", "less_than_hs")
+                     ) +
+  theme_minimal()
+```
+
+
+## Wages Between Educated Women and Men DataViz
+
+```{r, echo = TRUE}
+ggplot(wages_by_education, aes(year))+
+  geom_line(aes(y= men_advanced_degree, colour = "men_advanced_degree")) +
+  geom_line(aes(y= women_advanced_degree, colour = "women_advanced_degree")) +
+  geom_line(aes(y= men_bachelors_degree, colour = "men_bachelors_degree")) +
+  geom_line(aes(y= women_bachelors_degree, colour = "women_bachelors_degree")) +
+  labs(x = "Years (1973-2022)", y = "Hourly Wage ($)", title = "Wages by Education Level in the USA Between Educated Men and Women", color= "Manual", subtitle= "Are men earn more than women even they are educated in same level?") +
+  scale_color_manual(values = c("men_bachelors_degree" = "red", "women_advanced_degree" = "blue", "women_bachelors_degree" = "green", "men_advanced_degree" = "yellow"),
+                     labels = c("Men Advanced Degree","Men Bachelor's Degree", "Women Advanced Degree","Women Bachelor's Degree"),
+                     breaks = c("men_advanced_degree", "men_bachelors_degree", "women_advanced_degree", "women_bachelors_degree")) +
+  theme_minimal()
+```
+
+## Wages Between Different Educated Races
+
+```{r, echo = TRUE}
+ggplot(wages_by_education, aes(year))+
+  geom_line(aes(y= white_advanced_degree, colour = "white_advanced_degree")) +
+  geom_line(aes(y= hispanic_advanced_degree, colour = "hispanic_advanced_degree")) +
+  geom_line(aes(y= black_advanced_degree, colour = "black_advanced_degree")) +
+  labs(x = "Years (1973-2022)", y = "Hourly Wage ($)", title = "Wages by Education Level in the USA Between Different Educated Races", color= "Manual", subtitle= "In USA, is there wage differences between different races even they are educated in same level?") +
+  scale_color_manual(values = c("white_advanced_degree" = "red", "hispanic_advanced_degree" = "blue", "black_advanced_degree" = "green"),
+                     labels = c("White Advanced Degree", "Hispanic Advanced Degree", "Black Advanced Degree"),
+                     breaks = c("white_advanced_degree", "hispanic_advanced_degree", "black_advanced_degree")) +
+  theme_minimal()
+
+```
