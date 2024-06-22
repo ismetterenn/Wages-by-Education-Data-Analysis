@@ -1,0 +1,88 @@
+---
+title: "Regression Analysis of Wages by Sex,Education and Gender"
+author: "İsmet Eren"
+output: html_document
+---
+
+# Research Question 
+
+How do wages differ by gender across various education levels and races?
+
+# Data Source 
+
+https://www.epi.org/data/#?subject=wage-education
+
+# Summary Statistics 
+
+
+
+```{r my-summary-stats}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(tidyverse)
+
+wage_data <- read_csv("data/epi_library_wages_by_education_race_sex.csv")  #Uploading dataset.
+
+head(wage_data)
+
+summary(wage_data)
+
+selected_data <- wage_data %>%
+  select(Date, 
+         `White Men High school`, `Black Men High school`, `Hispanic Men High school`,
+         `White Women High school`, `Black Women High school`, `Hispanic Women High school`,
+         `White Men Some college`, `Black Men Some college`, `Hispanic Men Some college`,
+         `White Women Some college`, `Black Women Some college`, `Hispanic Women Some college`,
+         `White Men Bachelor's degree`, `Black Men Bachelor's degree`, `Hispanic Men Bachelor's degree`,
+         `White Women Bachelor's degree`, `Black Women Bachelor's degree`, `Hispanic Women Bachelor's degree`,
+         `White Men Advanced degree`, `Black Men Advanced degree`, `Hispanic Men Advanced degree`,
+         `White Women Advanced degree`, `Black Women Advanced degree`, `Hispanic Women Advanced degree`) %>%
+  gather(key = "Category", value = "Wages", -Date) %>%
+  separate(Category, into = c("Race", "Sex", "Education"), sep = " ", extra = "merge") %>%
+  mutate(Wages = as.numeric(gsub("[^0-9.]", "", Wages)),
+         Education = case_when(
+           grepl("High school", Education) ~ "High school",
+           grepl("Some college", Education) ~ "Some college",
+           grepl("Bachelor's degree", Education) ~ "Bachelor's degree",
+           grepl("Advanced degree", Education) ~ "Advanced degree"
+         ))
+summary(selected_data)   #I fixed the problems with data and filtered it.
+```
+
+As we see in our summary statistics, all data is in character structure. We needed to fix this. Then fixed it. We can see our summary statistics in the summary part.
+
+# Plot 
+
+
+```{r my-plot}
+library(ggplot2)
+
+ggplot(selected_data, aes(x = Sex, y = Wages, fill = Education)) +      #It is boxplot of my data.
+  geom_boxplot() +
+  facet_wrap(~ Race) +
+  theme_minimal() +
+  labs(title = "Wages by Gender, Education Level, and Race",
+       x = "Gender",
+       y = "Wages") +
+  scale_fill_manual(values = c("High school" = "lightblue", 
+                               "Some college" = "lightcoral", 
+                               "Bachelor's degree" = "lightgreen",
+                               "Advanced degree" = "lightgoldenrod"))
+```
+
+The boxplot shows the distribution of wages by gender, highlighting differences in wages across education levels and races. It reveals that men generally earn higher wages than women, with variations across different education levels and races.
+
+# Analysis 
+
+
+
+```{r my-analysis}
+model <- lm(Wages ~ Sex + Education + Race, data = selected_data)
+summary(model)
+```
+The linear regression analysis indicates that gender, education level, and race significantly influence wages. The results suggest that men tend to earn higher wages than women, and higher education levels are associated with higher wages across different races.
+
+# Conclusion
+
+The analysis shows that gender significantly affects wages, with men generally earning more than women, and the effect is modulated by education level and race.
